@@ -1,3 +1,6 @@
+import os
+import json
+
 from lib.test import test_only
 
 # Mock sublime api, since we can't import sublime_api outside of sublime
@@ -38,3 +41,31 @@ class Region:
     @test_only
     def center(self):
         return (self.end() + self.begin()) / 2
+
+class Settings:
+    def __init__(self, data):
+        self.data = data
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
+
+    def set(self, key, value):
+        self.data[key] = value
+
+def load_settings(base_name, cache={}):
+    assert base_name == 'SublimeScopeTree.sublime-settings'
+
+    if base_name not in cache:
+        path = os.path.dirname(__file__) + '/../SublimeScopeTree.sublime-settings'
+        with open(path, 'r') as settings:
+            cache[base_name] = Settings(json.loads(settings.read()))
+    return cache[base_name]
+
+@test_only
+def inject_settings(**kwargs):
+    '''
+    Convenience method for dynamically playing around with settings
+    '''
+    s = load_settings('SublimeScopeTree.sublime-settings')
+    for key, value in kwargs.items():
+        s.set(key, value)
