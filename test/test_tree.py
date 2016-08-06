@@ -5,6 +5,9 @@ from lib.errors import ScopeIntersectError, ScopeNestingError, DuplicateScopeErr
 from lib.settings import get_setting
 from lib.mocks import Region, inject_settings
 from lib.test import test
+from lib.log import get_logger
+
+log = get_logger('test.tree')
 
 class Find(TestCase):
     @test

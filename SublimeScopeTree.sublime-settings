@@ -1,3 +1,5 @@
 {
-    "indent_width": 2
+    "indent_width": 2,
+    "log_file": "${HOME}/.config/sublime-text-3/Packages/SublimeScopeTree/sublime_scope_tree.log",
+    "reset_log": true
 }
