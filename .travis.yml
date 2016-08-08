@@ -3,4 +3,4 @@ python:
   - "3.5"
 
 install: "pip install nose"
-script: "sublime_scope_tree_log_file=stdout python -m nose"
+script: "sublime_scope_tree_log_file=stdout python -m nose -v"

@@ -24,6 +24,13 @@ class DuplicateScopeError(ScopeError):
         super(DuplicateScopeError, self).__init__(
             'Scope {} duplicates scope scope {}.', scope1, scope2)
 
+class RenderError(Exception):
+    def __init__(self, msg):
+        self._msg = msg
+
+    def __repr__(self):
+        return self._msg
+
 class TestOnlyError(Exception):
     def __init__(self, func, caller):
         self.func = func

@@ -1,14 +1,31 @@
 import os
 import json
+from nose.tools import nottest
 
 from lib.test import test_only
 
 # Mock sublime api, since we can't import sublime_api outside of sublime
 
+class View:
+    @test_only
+    def __init__(self, size):
+        self._size = size
+
+    def size(self):
+        return self._size
+
+@test_only
+@nottest
+def test_view():
+    return View(10000)
+
 class Region:
     def __init__(self, a, b):
         self.a = a
         self.b = b
+
+    def __lt__(self, other):
+        return self.begin() < other.begin()
 
     def begin(self):
         return min(self.a, self.b)
@@ -35,8 +52,6 @@ class Region:
 
     def __repr__(self):
         return '({begin}, {end})'.format(begin=self.begin(), end=self.end())
-
-    # Implement more functions as needed
 
     @test_only
     def center(self):
