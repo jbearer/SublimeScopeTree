@@ -1,7 +1,7 @@
-from lib.errors import ScopeIntersectError, ScopeNestingError, DuplicateScopeError, RenderError
-from lib.log import get_logger
-from lib.settings import get_setting
-from lib.test import test_only
+from SublimeScopeTree.lib.errors import ScopeIntersectError, ScopeNestingError, DuplicateScopeError, RenderError
+from SublimeScopeTree.lib.log import get_logger
+from SublimeScopeTree.lib.settings import get_setting
+from SublimeScopeTree.lib.test import test_only
 
 from sublime import Region
 

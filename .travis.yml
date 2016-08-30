@@ -1,6 +1,28 @@
-language: python
-python:
-  - "3.5"
+os:
+    - linux
+    - osx
 
-install: "pip install nose"
-script: "sublime_scope_tree_log_file=stdout python -m nose -v"
+sudo: required
+
+env:
+    global:
+        - PACKAGE="SublimeScopeTree"
+        - sublime_scope_tree_log_level="debug"
+        - sublime_scope_tree_log_file="sublime_scope_tree.log"
+    matrix:
+        - SUBLIME_TEXT_VERSION="3"
+
+before_install:
+    - curl -OL https://raw.githubusercontent.com/randy3k/UnitTesting/master/sbin/travis.sh
+    # enable gui, see https://docs.travis-ci.com/user/gui-and-headless-browsers
+    - if [ "$TRAVIS_OS_NAME" == "linux"  ]; then
+            export DISPLAY=:99.0;
+            sh -e /etc/init.d/xvfb start;
+      fi
+
+install:
+    # bootstrap the testing environment
+    - sh travis.sh bootstrap
+
+script:
+    - sh travis.sh run_tests

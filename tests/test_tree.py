@@ -1,18 +1,35 @@
 from itertools import permutations
 from unittest import TestCase
 
-from lib.tree import ScopeTree, Scope
-from lib.errors import ScopeIntersectError, DuplicateScopeError, RenderError
-from lib.settings import get_setting
-from lib.mocks import Region, inject_settings, test_view
-from lib.test import test, test_only, debug
-from lib.log import get_logger
+from sublime import Region, View
+
+from SublimeScopeTree.lib.tree import ScopeTree, Scope
+from SublimeScopeTree.lib.errors import ScopeIntersectError, DuplicateScopeError, RenderError
+from SublimeScopeTree.lib.settings import get_setting
+from SublimeScopeTree.lib.test import test, test_only, debug, inject_settings
+from SublimeScopeTree.lib.log import get_logger
 
 log = get_logger('test.tree')
+
+class MockView(View):
+    @test_only
+    def __init__(self, size):
+        self._size = size
+
+    def size(self):
+        return self._size
+
+@test_only
+def test_view():
+    return MockView(10000)
 
 @test_only
 def simulate_insert(*top_level_scopes):
     ScopeTree(test_view()).set_top_level_scopes(*top_level_scopes)
+
+@test_only
+def center(region):
+    return (region.begin() + region.end()) / 2
 
 class SetTopLevelScopes(TestCase):
     '''
@@ -74,7 +91,7 @@ class Find(TestCase):
         root = Scope(Region(0, 10), 'root')
         self.tree.set_top_level_scopes(root)
 
-        self.assertEqual(self.tree.find(root.display_region().center()), root.display_region())
+        self.assertEqual(self.tree.find(center(root.display_region())), root.display_region())
         self.assertFalse(self.tree.find(root.display_region().end() + 1))
 
     @test
@@ -92,7 +109,7 @@ class Find(TestCase):
 
         self.assertEqual(self.tree.find(root.display_region().begin()), root.display_region())
         for child in children:
-            self.assertEqual(child.display_region(), self.tree.find(child.display_region().center()))
+            self.assertEqual(child.display_region(), self.tree.find(center(child.display_region())))
 
     @test
     def test_depth(self):
@@ -105,7 +122,7 @@ class Find(TestCase):
 
         self.assertEqual(self.tree.find(root.display_region().begin()), root.display_region())
         self.assertEqual(self.tree.find(child1.display_region().begin()), child1.display_region())
-        self.assertEqual(self.tree.find(child2.display_region().center()), child2.display_region())
+        self.assertEqual(self.tree.find(center(child2.display_region())), child2.display_region())
 
     @test
     def test_multiple_roots(self):
@@ -116,7 +133,7 @@ class Find(TestCase):
         ]
         self.tree.set_top_level_scopes(roots)
         for scope in roots:
-            self.assertEqual(scope.display_region(), self.tree.find(scope.display_region().center()))
+            self.assertEqual(scope.display_region(), self.tree.find(center(scope.display_region())))
 
     @test
     def test_multiple_roots_depth(self):
@@ -132,8 +149,8 @@ class Find(TestCase):
 
         self.assertEqual(root1.display_region(), self.tree.find(root1.display_region().begin() + 1))
         self.assertEqual(root2.display_region(), self.tree.find(root2.display_region().begin() + 1))
-        self.assertEqual(child1.display_region(), self.tree.find(child1.display_region().center()))
-        self.assertEqual(child2.display_region(), self.tree.find(child2.display_region().center()))
+        self.assertEqual(child1.display_region(), self.tree.find(center(child1.display_region())))
+        self.assertEqual(child2.display_region(), self.tree.find(center(child2.display_region())))
 
 class Insert(TestCase):
     def setUp(self):
@@ -148,7 +165,7 @@ class Insert(TestCase):
         node = Scope(region, name)
 
         self.assertEqual(self.tree.size(), 0)
-        self.assertFalse(self.tree.find(region.center()))
+        self.assertFalse(self.tree.find(center(region)))
 
         self.tree.insert(region, name)
         self.tree.render()
@@ -156,7 +173,7 @@ class Insert(TestCase):
         simulate_insert(node)
 
         self.assertEqual(self.tree.size(), 1)
-        self.assertEqual(node.display_region(), self.tree.find(region.center()))
+        self.assertEqual(node.display_region(), self.tree.find(center(region)))
 
     @test
     def test_one_child(self):
@@ -175,7 +192,7 @@ class Insert(TestCase):
         simulate_insert(root_node)
 
         self.assertEqual(self.tree.size(), 2)
-        self.assertEqual(child_node.display_region(), self.tree.find(child_node.display_region().center()))
+        self.assertEqual(child_node.display_region(), self.tree.find(center(child_node.display_region())))
         self.assertEqual(root_node.display_region(), self.tree.find(root_node.display_region().begin()))
 
     @test
@@ -200,8 +217,8 @@ class Insert(TestCase):
 
         self.assertEqual(self.tree.size(), 3)
         self.assertEqual(self.tree.find(root_node.display_region().begin()), root_node.display_region())
-        self.assertEqual(self.tree.find(child1_node.display_region().center()), child1_node.display_region())
-        self.assertEqual(self.tree.find(child2_node.display_region().center()), child2_node.display_region())
+        self.assertEqual(self.tree.find(center(child1_node.display_region())), child1_node.display_region())
+        self.assertEqual(self.tree.find(center(child2_node.display_region())), child2_node.display_region())
 
     @test
     def test_depth(self):
@@ -226,7 +243,7 @@ class Insert(TestCase):
         self.assertEqual(self.tree.size(), 3)
         self.assertEqual(self.tree.find(root_node.display_region().begin()), root_node.display_region())
         self.assertEqual(self.tree.find(child1_node.display_region().begin()), child1_node.display_region())
-        self.assertEqual(self.tree.find(child2_node.display_region().center()), child2_node.display_region())
+        self.assertEqual(self.tree.find(center(child2_node.display_region())), child2_node.display_region())
 
     @test
     def test_multiple_roots(self):
@@ -244,7 +261,7 @@ class Insert(TestCase):
 
         self.assertEqual(self.tree.size(), len(roots))
         for scope in roots:
-            self.assertEqual(scope.display_region(), self.tree.find(scope.display_region().center()))
+            self.assertEqual(scope.display_region(), self.tree.find(center(scope.display_region())))
 
     @test
     def test_multiple_roots_depth(self):
@@ -271,8 +288,8 @@ class Insert(TestCase):
 
         self.assertEqual(root1.display_region(), self.tree.find(root1.display_region().begin() + 1))
         self.assertEqual(root2.display_region(), self.tree.find(root2.display_region().begin() + 1))
-        self.assertEqual(child1.display_region(), self.tree.find(child1.display_region().center()))
-        self.assertEqual(child2.display_region(), self.tree.find(child2.display_region().center()))
+        self.assertEqual(child1.display_region(), self.tree.find(center(child1.display_region())))
+        self.assertEqual(child2.display_region(), self.tree.find(center(child2.display_region())))
 
     @test
     def test_permutations(self):
@@ -309,11 +326,11 @@ class Insert(TestCase):
 
         # Should raise an error if we try to find before updating
         with self.assertRaises(RenderError):
-            self.tree.find(root.display_region().center())
+            self.tree.find(center(root.display_region()))
 
         self.tree.render()
         simulate_insert(root)
-        self.assertEqual(self.tree.find(root.display_region().center()), root.display_region())
+        self.assertEqual(self.tree.find(center(root.display_region())), root.display_region())
 
         # A region that intersects the tree's region
         with self.assertRaises(ScopeIntersectError):

@@ -1,13 +1,14 @@
 from functools import wraps
-from nose.tools import nottest
+import os
 import sys
 import traceback
 
-from lib.errors import TestOnlyError
+import sublime
+
+from SublimeScopeTree.lib.errors import TestOnlyError
 
 _allow_test_only = False
 
-@nottest
 def test(func):
     '''
     Decorator to declare a function a unit test, capable of calling test_only functions
@@ -31,7 +32,6 @@ def test(func):
 
     return wrapper
 
-@nottest
 def test_only(func):
     '''
     Decorator to declare a function test_only. The function will cause a runtime error if not called
@@ -58,24 +58,11 @@ class debug:
         global _allow_test_only
         _allow_test_only = False
 
-class MockHook():
+@test_only
+def inject_settings(**kwargs):
     '''
-    Import hook which will import test.mocks when one of the mocked out modules is requested.
+    Convenience method for dynamically playing around with settings
     '''
-
-    def __init__(self, modules):
-        self.modules = modules
-
-    def find_module(self, name, _=None):
-        if name in self.modules:
-            return self
-        return None
-
-    def load_module(self, name):
-        if name not in sys.modules:
-            import lib.mocks as mocks
-            sys.modules[name] = mocks
-        return sys.modules[name]
-
-def mock(*modules):
-    sys.meta_path.append(MockHook(modules))
+    s = sublime.load_settings('SublimeScopeTree.sublime-settings')
+    for key, value in kwargs.items():
+        s.set(key, value)

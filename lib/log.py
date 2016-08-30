@@ -2,7 +2,7 @@ from inspect import getargspec
 import logging
 import sys
 
-import lib.settings as settings
+import SublimeScopeTree.lib.settings as settings
 
 class FormatLogger(logging.LoggerAdapter):
     def __init__(self, logger, name):
