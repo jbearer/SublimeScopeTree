@@ -1,5 +1,6 @@
 from inspect import getargspec
 import logging
+import os
 import sys
 
 import SublimeScopeTree.lib.settings as settings
@@ -51,7 +52,8 @@ def log_level():
 
 def reset_log_file():
     filename = settings.get_setting('log_file', None)
-    if filename:
+    if filename and os.path.isfile(filename):
+        # Truncate the file
         open(filename, 'w').close()
 
 if settings.get_setting('reset_log', False):
