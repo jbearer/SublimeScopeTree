@@ -1,3 +1,5 @@
+import re
+
 from SublimeScopeTree.lib.errors import ScopeIntersectError, ScopeNestingError, DuplicateScopeError, RenderError
 from SublimeScopeTree.lib.log import get_logger
 from SublimeScopeTree.lib.settings import get_setting
@@ -21,8 +23,22 @@ class ScopeTree:
         self._size = 0
         self._needs_render = False
 
+    @test_only
     def __repr__(self):
-        return self.render()
+        '''
+        Display the tree with additional diagnostic information.
+        '''
+        # Calculate all of the display regions. Doing this and then printing diagnostic information
+        # is doing a lot of extra work, which is why we only use this function in unit tests.
+        self.render()
+
+        def _repr(root):
+            ret = repr(root)
+            for child in root.children:
+                ret += _repr(child)
+            return ret
+
+        return _repr(self._root)
 
     def __eq__(self, other):
         if not isinstance(other, ScopeTree):
@@ -181,8 +197,10 @@ class Scope:
         display_diag = '(unknown)'
         if self._parent and not self._parent._needs_render:
             display_diag = repr(self.display_region())
-        return '{name} {{source={source}, display={display}}}'.format(
-            name=self.name, source=repr(self.source_region()), display=display_diag)
+
+        # Render and append diagnostic information to the end of the line
+        return re.sub(r'\n$', ' {{source={source}, display={display}}}\n'.format(
+            source=repr(self.source_region()), display=display_diag), self.render())
 
     def add_child(self, child, index=None):
         '''
@@ -287,7 +305,7 @@ class FileScope(Scope):
         assert self._parent
 
     def __repr__(self):
-        return self.name
+        return ''
 
     def render(self):
         return ''
