@@ -1,3 +1,13 @@
+class FormattedError(Exception):
+    def __init__(self, msg, *args, **kwargs):
+        # We only want to call format if the client actually intended msg to be a format string. If
+        # msg was not intended to be formatted, it may contain { and } characters, which can make
+        # string.format complain.
+        if args or kwargs:
+            msg = msg.format(*args, **kwargs)
+
+        Exception.__init__(self, msg)
+
 class ScopeError(Exception):
     def __init__(self, msg, *scopes):
         self.msg = msg
@@ -24,17 +34,10 @@ class DuplicateScopeError(ScopeError):
         super(DuplicateScopeError, self).__init__(
             'Scope {} duplicates scope scope {}.', scope1, scope2)
 
-class RenderError(Exception):
-    def __init__(self, msg):
-        self._msg = msg
+class RenderError(FormattedError):
+    def __init__(self, msg, *args, **kwargs):
+        FormattedError.__init__(self, msg, *args, **kwargs)
 
-    def __repr__(self):
-        return self._msg
-
-class TestOnlyError(Exception):
+class TestOnlyError(FormattedError):
     def __init__(self, func, caller):
-        self.func = func
-        self.caller = caller
-
-    def __repr__(self):
-        return 'Test-only function {} called by production function {}'.format(self.func, self.caller)
+        FormattedError.__init__(self, 'Test-only function {} called by production function {}', func, caller)
