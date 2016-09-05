@@ -1,0 +1,1 @@
+import SublimeScopeTree.parsers.mock

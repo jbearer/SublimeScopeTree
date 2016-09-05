@@ -41,3 +41,12 @@ class RenderError(FormattedError):
 class TestOnlyError(FormattedError):
     def __init__(self, func, caller):
         FormattedError.__init__(self, 'Test-only function {} called by production function {}', func, caller)
+
+class ParserSyntaxError(FormattedError):
+    def __init__(self, msg, *args, **kwargs):
+        FormattedError.__init__(self, msg, *args, **kwargs)
+
+class ParseError(FormattedError):
+    def __init__(self, view, location, msg, *args, **kwargs):
+        prefix = 'Parse error ({file}:{line}): '.format(file=view.filename(), line=view.line(location))
+        FormattedError.__init__(self, prefix + msg, *args, **kwargs)
