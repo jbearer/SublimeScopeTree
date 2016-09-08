@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "SublimeScopeTree: Render Tree",
+        "command": "scope_tree_render"
+    }
+]
