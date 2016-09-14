@@ -24,6 +24,10 @@ def test_view():
     return MockView(10000)
 
 @test_only
+def test_tree():
+    return ScopeTree(test_view())
+
+@test_only
 def simulate_insert(*top_level_scopes):
     ScopeTree(test_view()).set_top_level_scopes(*top_level_scopes)
 
@@ -156,7 +160,7 @@ class Insert(TestCase):
     def setUp(self):
         log.debug('Setting up test.test_tree.Insert.')
         with debug():
-            self.tree = ScopeTree(test_view())
+            self.tree = test_tree()
 
     @test
     def test_empty(self):
@@ -308,16 +312,15 @@ class Insert(TestCase):
         root1.add_child(Scope(*nodes[3]))
         root2.add_child(Scope(*nodes[4]))
         root2.children[0].add_child(Scope(*nodes[5]))
-        out_tree = self.tree
-        out_tree.set_top_level_scopes(root1, root2)
+        correct_tree = test_tree()
+        correct_tree.set_top_level_scopes(root1, root2)
 
         for permutation in permutations(nodes):
-            log.info('Begin permutation test:\n{}', permutation)
-            self.tree.set_top_level_scopes()
+            log.debug('Begin permutation test:\n{}', permutation)
+            tree = test_tree()
             for node in permutation:
-                self.tree.insert(*node)
-            self.tree.render()
-            self.assertEqual(self.tree, out_tree)
+                tree.insert(*node)
+            self.assertEqual(correct_tree, tree)
 
     @test
     def test_invalid(self):

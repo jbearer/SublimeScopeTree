@@ -93,11 +93,36 @@ class ScopeTree:
                     _insert(children[index], child)
                     return
                 elif child.contains(children[index], Scope.source_region):
-                    log.info('Inserted {new} in place of {old}, {old} added as child of {new}',
-                             new=child, old=children[index])
+                    # Add the new child where children[index] was. Children[index] becomes a child
+                    # of the newly added scope.
                     child.add_child(children[index])
                     children[index] = child
+
+                    # The new scope may contain a range of children. We have to find all of these,
+                    # add them as childrne of the new scope, and delete them from the current list
+                    new_children = 1 # We've already added children[index]
+                    pre = index - 1
+                    while pre >= 0 and child.contains(children[pre], Scope.source_region):
+                        # Since the old list is sorted, each previous child will be the first in the
+                        # new list, so we add at index 0.
+                        child.add_child(children[pre], 0)
+                        children.pop(pre)
+                        pre -= 1
+                        new_children += 1
+
+                    post = index + 1
+                    while post < len(children) and child.contains(children[post], Scope.source_region):
+                        # Since the old list is sorted, each post child will be the last in the
+                        # new list, so we add at the end of that list.
+                        child.add_child(children[post], len(child.children))
+                        children.pop(post)
+                        # No need to increment post, since pop will shift all of the indices by 1
+                        new_children += 1
+
+                    log.info('Inserted {new} in place of {old}, {num} scopes added as children of {new}',
+                             new=child, old=children[index], num=new_children)
                     return
+
             root.add_child(child, index)
             log.info('Inserted {} as child of {}', child, root)
 
