@@ -1,5 +1,6 @@
 import re
 
+from SublimeScopeTree.lib.display import DisplayRegion
 from SublimeScopeTree.lib.errors import ScopeIntersectError, ScopeNestingError, DuplicateScopeError, RenderError
 from SublimeScopeTree.lib.log import get_logger
 from SublimeScopeTree.lib.settings import get_setting
@@ -21,7 +22,7 @@ class ScopeTree:
         # Top level file scope
         self._root = FileScope(view, self)
         self._size = 0
-        self._needs_render = False
+        self._needs_render = True
 
     @test_only
     def __repr__(self):
@@ -66,7 +67,7 @@ class ScopeTree:
             ret = root.render()
             for child in root.children:
                 ret += _render(child, offset + len(ret))
-            root.display_stop(offset + len(ret))
+            root.display_stop(offset + len(ret) - 1)
             return ret
 
         ret = _render(self._root, 0)
@@ -206,8 +207,7 @@ class Scope:
         self._indent = 0
 
         # Display region bounds
-        self._display_start = 0
-        self._display_stop = 0
+        self._display_region = DisplayRegion(None, None, self.name)
 
     def __eq__(self, other):
         if not isinstance(other, Scope):
@@ -273,7 +273,10 @@ class Scope:
         if self._parent._needs_render:
             raise RenderError('Must render parent before caclulating display region')
 
-        return Region(self._display_start, self._display_stop)
+        # If the preconditions are met, we should have a valid region
+        assert self._display_region.begin() is not None and self._display_region.end() is not None
+
+        return self._display_region
 
     def validate_insert(self, index, child):
         '''
@@ -313,10 +316,10 @@ class Scope:
     # Set the bounds of the display region
     def display_start(self, offset):
         log.debug('{name}: begin display region at {offset}', name=self.name, offset=offset)
-        self._display_start = offset
+        self._display_region.set_begin(offset)
     def display_stop(self, offset):
         log.debug('{name}: end display region at {offset}', name=self.name, offset=offset)
-        self._display_stop = offset
+        self._display_region.set_end(offset)
 
     def render(self):
         return ' '*self._indent*get_setting('indent_width') + self.name + '\n'
@@ -337,7 +340,6 @@ class FileScope(Scope):
 
     def add_child(self, child, index=None):
         index = index or self.find_child(child, Scope.source_region)
-        log.info('{}', index)
         child._indent = 0
         child._parent = self._parent
 

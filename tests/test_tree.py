@@ -69,16 +69,16 @@ class SetTopLevelScopes(TestCase):
 
         self.assertEqual(tree.size(), 10)
 
-        self.assertEqual(root1.display_region(), Region(0, 62))
-        self.assertEqual(child1a.display_region(), Region(6, 34))
-        self.assertEqual(child2a.display_region(), Region(34, 62))
-        self.assertEqual(child3a.display_region(), Region(18, 34))
-        self.assertEqual(child4a.display_region(), Region(46, 62))
-        self.assertEqual(root2.display_region(), Region(62, 124))
-        self.assertEqual(child1b.display_region(), Region(68, 96))
-        self.assertEqual(child2b.display_region(), Region(96, 124))
-        self.assertEqual(child3b.display_region(), Region(80, 96))
-        self.assertEqual(child4b.display_region(), Region(108, 124))
+        self.assertEqual(root1.display_region(), Region(0, 61))
+        self.assertEqual(child1a.display_region(), Region(6, 33))
+        self.assertEqual(child2a.display_region(), Region(34, 61))
+        self.assertEqual(child3a.display_region(), Region(18, 33))
+        self.assertEqual(child4a.display_region(), Region(46, 61))
+        self.assertEqual(root2.display_region(), Region(62, 123))
+        self.assertEqual(child1b.display_region(), Region(68, 95))
+        self.assertEqual(child2b.display_region(), Region(96, 123))
+        self.assertEqual(child3b.display_region(), Region(80, 95))
+        self.assertEqual(child4b.display_region(), Region(108, 123))
 
 class Find(TestCase):
     def setUp(self):

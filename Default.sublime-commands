@@ -2,5 +2,10 @@
     {
         "caption": "SublimeScopeTree: Render Tree",
         "command": "scope_tree_render"
+    },
+
+    {
+        "caption": "SublimeScopeTree: Fold Selection",
+        "command": "scope_tree_fold"
     }
 ]
