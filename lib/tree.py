@@ -207,7 +207,7 @@ class Scope:
         self._indent = 0
 
         # Display region bounds
-        self._display_region = DisplayRegion(None, None, self.name)
+        self._display_region = DisplayRegion(None, None, self)
 
     def __eq__(self, other):
         if not isinstance(other, Scope):
